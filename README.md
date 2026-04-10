@@ -19,33 +19,75 @@ Module này cho phép quản lý toàn bộ thông tin người liên hệ gắn
 | 6 | **Xóa liên hệ** | Thực hiện xóa mềm (cập nhật is_active=false) | ✅ Done |
 
 ---
-## Chi tiết chức năng
+## hình ảnh chức năng
 ### 1. Xem danh sách
 
-![Danh sách liên hệ](link here)
+![Danh sách liên hệ](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-danh-sach.png)
+
+Thông tin hiển thị:
+
+- Họ và tên người liên hệ, Chức vụ
+- Số điện thoại chính, Email chính
+- Tên khách hàng
+  
+Điều kiện nghiệp vụ:
+
+- Phân trang mặc định 5 dòng/trang, tùy chỉnh 5 / 10 / 20 / 50
+
 
 ### 2. Tìm kiếm
 Tìm kiếm thành công
 
-![Tìm kiếm thành công](link here)
+![Tìm kiếm thành công](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-tim-kiem.png)
+
 
 Tìm kiếm thất bại
 
-![TÌm kiếm thất bại](link here)
+![TÌm kiếm thất bại](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-tim-kiem-khong-thay.png)
 
-### 3. Thêm mới
-![Bắt lỗi](link here)
+Các tiêu chí tìm kiếm:
+
+- Họ và tên - tìm kiếm gần đúng, không phân biệt hoa thường
+- Email - tìm kiếm chính xác hoặc gần đúng
+
+### 3. Thêm liên hệ mới
+
+Form thêm mới
+
+![Bắt lỗi](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-them-sua-xem-chi-tiet.png)
+
+Hiển thị lỗi
+
+![Bắt lỗi](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-them-sua-xem-chi-tiet.png)
+
+Thông tin nhập liệu
+
+| # | Trường dữ liệu | Bắt buộc | Ghi chú |
+|---|----------------|----------------------|------------|
+| 1 | **Tên khách hàng** | Có | Hiển thị danh sách cho người dùng chọn, và hỗ trợ tìm kiếm |
+| 2 | **Họ và tên** | Có | Bắt lỗi đang lúc nhập nếu vượt quá 50|
+| 3 | **Chức vụ** | Có | Bắt lỗi đang lúc nhập nếu vượt quá 100 |
+| 4 | **Liên hệ chính** | Không | Đánh dấu là liên hệ chính của khách hàng |
+| 5 | **Số điện thoại** | Có | Bắt lỗi đang lúc nhập nếu số vượt 10, không có ký tự và chữ |
+| 6 | **Email** | Có | bắt lỗi nếu không đúng dạng email |
+| 6 | **Địa chỉ** | Không | Có thể lấy API sau này |
+| 6 | **Ngày sinh** | Không | bắt lỗi nếu lớn hơn này hiện tại, đủ 18 tuổi |
+| 6 | **Ghi chú** | Không | Bắt lỗi nếu vượt 500 ký tự |
 
 ### 4. Xóa liên hệ
-![Xóa nhiều](link here)
+![Xóa nhiều](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-xoa-hang-loat.png)
+
+Chọn vào checkbox các liên hệ muốn xóa sao đó sẽ thực hiện xóa mềm.
 
 ### 5. Xem chi tiết và chỉnh sửa thông tin 
-![Xem chi tiết](link here)
+![Xem chi tiết](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-bat-loai-luc-dang-nhap.png)
 
-## Cấu trúc cơ sở dữ liệu
-![Database](link here)
+---
 
+## Cấu trúc bảng cơ sở dữ liệu
+![Database](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/db.png)
 
+---
 
 ## Công Nghệ Sử Dụng
 
