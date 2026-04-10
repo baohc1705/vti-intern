@@ -54,11 +54,11 @@ Các tiêu chí tìm kiếm:
 
 Form thêm mới
 
-![Bắt lỗi](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-them-sua-xem-chi-tiet.png)
+![Form thêm](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-them-sua-xem-chi-tiet.png)
 
 Hiển thị lỗi
 
-![Bắt lỗi](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-them-sua-xem-chi-tiet.png)
+![Bắt lỗi](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-bat-loai.png)
 
 Thông tin nhập liệu
 
