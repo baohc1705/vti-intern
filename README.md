@@ -28,7 +28,7 @@ Thông tin hiển thị:
 
 - Họ và tên người liên hệ, Chức vụ
 - Số điện thoại chính, Email chính
-- Tên khách hàng
+- Tên khách hàng, thời gian cập nhật
   
 Điều kiện nghiệp vụ:
 
@@ -70,9 +70,9 @@ Thông tin nhập liệu
 | 4 | **Liên hệ chính** | Không | Đánh dấu là liên hệ chính của khách hàng |
 | 5 | **Số điện thoại** | Có | Bắt lỗi đang lúc nhập nếu số vượt 10, không có ký tự và chữ |
 | 6 | **Email** | Có | bắt lỗi nếu không đúng dạng email |
-| 6 | **Địa chỉ** | Không | Có thể lấy API sau này |
-| 6 | **Ngày sinh** | Không | bắt lỗi nếu lớn hơn này hiện tại, đủ 18 tuổi |
-| 6 | **Ghi chú** | Không | Bắt lỗi nếu vượt 500 ký tự |
+| 7 | **Địa chỉ** | Không | Có thể lấy API sau này |
+| 8 | **Ngày sinh** | Không | bắt lỗi nếu lớn hơn này hiện tại, đủ 18 tuổi |
+| 9 | **Ghi chú** | Không | Bắt lỗi nếu vượt 500 ký tự |
 
 ### 4. Xóa liên hệ
 ![Xóa nhiều](https://github.com/baohc1705/vti-intern/blob/main/Screenshot/giao-dien-xoa-hang-loat.png)
@@ -91,8 +91,8 @@ Chọn vào checkbox các liên hệ muốn xóa sao đó sẽ thực hiện xó
 
 ## Công Nghệ Sử Dụng
 
-* **Core:** Java 21, Spring 4
-* **Data Access:** Spring Data JPA / Hibernate, JDBC
+* **Core:** Java 21, Spring Boot MVC
+* **Data Access:** Spring Data JPA
 * **Database:** MySQL
 * **Build tool:** Maven
 
