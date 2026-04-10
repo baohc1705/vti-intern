@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo liên hệ mới</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary:       #4f46e5;
+            --primary-hover: #4338ca;
+            --border:        #e2e4e9;
+            --border-focus:  #4f46e5;
+            --bg-input:      #f4f5f7;
+            --muted:         #6b7280;
+            --dark:          #111827;
+            --danger:        #ef4444;
+            --success:       #10b981;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: #eef0f4;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        /* ── Page header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 32px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .93rem;
+        }
+        .breadcrumb-nav a { color: var(--muted); text-decoration: none; }
+        .breadcrumb-nav a:hover { color: var(--primary); }
+        .breadcrumb-nav .sep { color: var(--muted); }
+        .breadcrumb-nav .current { font-weight: 700; color: var(--dark); }
+
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .btn-cancel {
+            background: none; border: none;
+            color: var(--primary); font-size: .9rem;
+            font-weight: 600; cursor: pointer; padding: 8px 16px;
+            border-radius: 8px; transition: background .15s;
+            text-decoration: none;
+        }
+        .btn-cancel:hover { background: rgba(79,70,229,.07); }
+
+        .btn-save {
+            background: var(--primary); color: #fff;
+            border: none; border-radius: 8px;
+            font-size: .9rem; font-weight: 600;
+            padding: 8px 22px; cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-save:hover { background: var(--primary-hover); }
+
+        .btn-dots {
+            background: none; border: 1px solid var(--border);
+            border-radius: 8px; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--dark); font-size: 1.1rem;
+        }
+
+        /* ── Main container ── */
+        .page-body { padding: 28px 32px; }
+
+        /* ── Card ── */
+        .form-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--dark);
+        }
+
+        /* ── Field layout ── */
+        .fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 28px;
+        }
+
+        /* field-group là đơn vị chứa: label + input/row + error + counter */
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .field-group.full { grid-column: 1 / -1; }
+
+        .field-label {
+            font-size: .83rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .field-label .required { color: var(--danger); margin-left: 2px; }
+
+        /* ── Input base ── */
+        .field-input {
+            width: 100%;
+            padding: 9px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-input);
+            font-size: .875rem;
+            color: var(--dark);
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .field-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .field-input.is-invalid {
+            border-color: var(--danger) !important;
+            background: #fff8f8;
+        }
+        .field-input.is-valid {
+            border-color: var(--success) !important;
+            background: #f0fdf9;
+        }
+
+        /* Input with icon inside */
+        .input-icon-wrap { position: relative; width: 100%; }
+        .input-icon-wrap .field-input { padding-right: 38px; }
+        .input-icon-wrap .icon-right {
+            position: absolute; right: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted); font-size: .95rem; pointer-events: none;
+        }
+
+        /* Select */
+        select.field-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='%236b7280' d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+
+        .phone-row,
+        .email-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            /* KHÔNG thêm margin-bottom ở đây — để field-group gap lo */
+        }
+
+        .flag-btn {
+            flex-shrink: 0;
+            width: 52px; height: 40px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem;
+        }
+
+        /* Input bên trong phone-row/email-row: flex:1, width tự co giãn */
+        .phone-row .field-input,
+        .email-row .field-input,
+        .email-row .input-icon-wrap {
+            flex: 1;
+            min-width: 0; /* fix flex shrink bug */
+        }
+
+        .btn-remove-row {
+            flex-shrink: 0;
+            background: none; border: none;
+            color: var(--muted); font-size: 1rem;
+            cursor: pointer; padding: 6px; border-radius: 6px;
+            line-height: 1;
+        }
+        .btn-remove-row:hover { color: var(--danger); background: #fff0f0; }
+
+        /* Add more link */
+        .btn-add-more {
+            background: none; border: none;
+            color: var(--muted); font-size: .84rem;
+            font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 5px;
+            padding: 2px 0; transition: color .15s;
+            align-self: flex-start;
+        }
+        .btn-add-more:hover { color: var(--primary); }
+
+        /* Textarea */
+        textarea.field-input { resize: vertical; min-height: 80px; }
+
+        /* Checkbox row */
+        .check-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+        }
+        .check-row input[type="checkbox"] {
+            width: 17px; height: 17px;
+            accent-color: var(--primary); cursor: pointer;
+            flex-shrink: 0;
+        }
+        .check-row label { font-size: .875rem; cursor: pointer; margin: 0; }
+
+        /* Divider */
+        .form-divider {
+            border: none; border-top: 1px solid var(--border);
+            margin: 24px 0;
+        }
+
+        /* ── Validation messages ── */
+        /*
+         * .field-error luôn nằm trong .field-group (không nằm trong flex row)
+         * Nhờ đó phone/email input không bị co lại
+         */
+        .field-error {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .775rem;
+            color: var(--danger);
+            animation: slideDown .15s ease;
+        }
+        .field-error i { font-size: .8rem; flex-shrink: 0; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Char counter ── */
+        .char-counter {
+            font-size: .74rem;
+            color: var(--muted);
+            text-align: right;
+            display: block;
+            transition: color .2s;
+        }
+        .char-counter.warn  { color: #f59e0b; }
+        .char-counter.over  { color: var(--danger); font-weight: 600; }
+
+        @media (max-width: 680px) {
+            .fields-grid { grid-template-columns: 1fr; }
+            .field-group.full { grid-column: 1; }
+            .page-body { padding: 16px; }
+            .form-card { padding: 18px 16px; }
+        }
+              .combo-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .combo-display {
+            width: 100%;
+            padding: 9px 36px 9px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-input);
+            font-size: .875rem;
+            color: var(--dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: border-color .15s, box-shadow .15s;
+            user-select: none;
+            min-height: 40px;
+        }
+        .combo-display:focus,
+        .combo-display.open {
+            outline: none;
+            border-color: var(--border-focus);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .combo-display.is-invalid { border-color: var(--danger) !important; }
+
+        .combo-display .combo-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .combo-display .combo-text.placeholder { color: var(--bg-input); }
+        .combo-display .combo-arrow {
+            flex-shrink: 0;
+            color: var(--muted);
+            font-size: .8rem;
+            transition: transform .2s;
+        }
+        .combo-display.open .combo-arrow { transform: rotate(180deg); }
+
+        /* Dropdown panel */
+        .combo-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            z-index: 999;
+            overflow: hidden;
+        }
+        .combo-dropdown.open { display: block; }
+
+        /* Search inside dropdown */
+        .combo-search-wrap {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .combo-search {
+            width: 100%;
+            padding: 7px 12px 7px 32px;
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            font-size: .84rem;
+            background: #f9fafb;
+            color: var(--dark);
+        }
+        .combo-search:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .combo-search-wrap .si {
+            position: absolute;
+            left: 22px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted); font-size: .85rem;
+            pointer-events: none;
+        }
+
+        /* List */
+        .combo-list {
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 6px 0;
+        }
+        .combo-list::-webkit-scrollbar { width: 5px; }
+        .combo-list::-webkit-scrollbar-thumb {
+            background: #d1d5db; border-radius: 4px;
+        }
+
+        .combo-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            cursor: pointer;
+            transition: background .12s;
+            font-size: .875rem;
+        }
+        .combo-option:hover,
+        .combo-option.focused { background: #f3f4f6; }
+        .combo-option.selected { background: #ede9fe; }
+
+        .combo-option .opt-avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a78bfa, #6366f1);
+            color: #fff; font-size: .75rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .combo-option .opt-info { flex: 1; overflow: hidden; }
+        .combo-option .opt-name {
+            font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .combo-option .opt-sub {
+            font-size: .75rem; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .combo-option .opt-check {
+            color: var(--primary); font-size: .85rem;
+            visibility: hidden;
+        }
+        .combo-option.selected .opt-check { visibility: visible; }
+
+        .combo-empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--muted);
+            font-size: .84rem;
+        }
+
+        /* Clear button */
+        .combo-clear {
+            position: absolute;
+            right: 36px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            color: var(--muted); cursor: pointer;
+            font-size: .85rem; padding: 2px;
+            display: none;
+            line-height: 1;
+        }
+        .combo-clear:hover { color: var(--danger); }
+    </style>
+
+</head>
+
+<body>
+
+<!-- ── Page header ── -->
+<div class="page-header">
+    <nav class="breadcrumb-nav">
+        <a th:href="@{/contacts}">Tất cả liên hệ</a>
+        <span class="sep">/</span>
+        <span class="current"
+                  th:text="${contact.id != null} ? 'Chỉnh sửa liên hệ' : 'Tạo liên hệ mới'">
+        </span>
+    </nav>
+    <div class="header-actions">
+        <a th:href="@{/contacts}" class="btn-cancel">Hủy</a>
+        <button type="submit" form="contactForm" class="btn-save">Lưu</button>
+    </div>
+</div>
+
+<!-- ── Body ── -->
+<!-- ── Body ── -->
+<div class="page-body">
+    <form id="contactForm"
+          th:action="${contact.id != null}
+                  ? @{/contacts/update/{id}(id=${contact.id})}
+                  : @{/contacts/save}"
+          th:object="${contact}"
+          method="post"
+          novalidate>
+
+        <!-- ── Card: Thông tin liên hệ ── -->
+        <div class="form-card">
+            <div class="section-title">Thông tin liên hệ</div>
+
+            <div class="fields-grid">
+
+                <!-- Customer ID -->
+
+                <div class="field-group" data-field="customerId">
+                    <label class="field-label">
+                        Tài khoản khách hàng<span class="required">*</span>
+                    </label>
+
+                    <!-- Input ẩn — giá trị thực gửi lên server -->
+                    <input type="hidden"
+                           id="customerIdInput"
+                           th:field="*{customer.id}"
+                           data-rule="customerId"
+                           required>
+
+                    <!-- Combobox hiển thị -->
+                    <div class="combo-wrap" id="customerCombo">
+
+                        <!-- Ô hiển thị đã chọn -->
+                        <div class="combo-display" id="comboDisplay"
+                             tabindex="0"
+                             onclick="toggleCombo()"
+                             onkeydown="comboKeydown(event)">
+                            <span class="combo-text placeholder" id="comboText">
+                                Chọn khách hàng...
+                            </span>
+                            <i class="bi bi-chevron-down combo-arrow" id="comboArrow"></i>
+                        </div>
+
+                        <!-- Nút xóa lựa chọn -->
+                        <button type="button" class="combo-clear" id="comboClear"
+                                onclick="clearCombo()" title="Xóa lựa chọn">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div class="combo-dropdown" id="comboDropdown">
+
+                            <!-- Tìm kiếm -->
+                            <div class="combo-search-wrap">
+                                <i class="bi bi-search si"></i>
+                                <input type="text"
+                                       class="combo-search"
+                                       id="comboSearch"
+                                       placeholder="Tìm tên hoặc email khách hàng..."
+                                       oninput="filterOptions(this.value)"
+                                       onkeydown="searchKeydown(event)"
+                                       autocomplete="off">
+                            </div>
+
+                            <!-- Danh sách -->
+                            <div class="combo-list" id="comboList">
+                                <!-- Render bằng Thymeleaf -->
+                                <div class="combo-option"
+                                     th:each="c : ${customers}"
+                                     th:attr="data-id=${c.id}, data-name=${c.name}, data-sub=${c.email}"
+                                     onclick="selectOption(this)">
+                                    <div class="opt-avatar"
+                                         th:text="${#strings.toUpperCase(#strings.substring(c.name,0,1))}">
+                                    </div>
+                                    <div class="opt-info">
+                                        <div class="opt-name" th:text="${c.name}"></div>
+                                        <div class="opt-sub"  th:text="${c.email}"></div>
+                                    </div>
+                                    <i class="bi bi-check2 opt-check"></i>
+                                </div>
+
+                                <!-- Kết quả rỗng (ẩn mặc định) -->
+                                <div class="combo-empty" id="comboEmpty" style="display:none;">
+                                    <i class="bi bi-search me-1"></i>
+                                    Không tìm thấy khách hàng
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error backend -->
+                    <div class="field-error" th:if="${#fields.hasErrors('customer.id')}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span th:errors="*{customer.id}"></span>
+                    </div>
+                </div>
+
+                <!-- isPrimary -->
+                <div class="field-group">
+                    <label class="field-label">Liên hệ chính</label>
+                    <div class="check-row">
+                        <input type="checkbox" id="isPrimary" th:field="*{primary}">
+                        <label for="isPrimary">Đánh dấu là liên hệ chính của khách hàng</label>
+                    </div>
+                </div>
+
+                <!-- Full Name -->
+                <div class="field-group" data-field="fullName">
+                    <label class="field-label">
+                        Họ và tên<span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           class="field-input"
+                           th:field="*{fullName}"
+                           th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'"
+                           data-rule="fullName"
+                           data-maxlength="50"
+                           autocomplete="off">
+                    <div class="field-error" th:if="${#fields.hasErrors('fullName')}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span th:errors="*{fullName}"></span>
+                    </div>
+                </div>
+
+                <!-- Position -->
+                <div class="field-group" data-field="position">
+                    <label class="field-label">Chức vụ<span class="required">*</span></label>
+                    <input type="text" class="field-input"
+                           th:field="*{position}"
+                           th:classappend="${#fields.hasErrors('position')} ? 'is-invalid'"
+                           data-rule="position"
+                           data-maxlength="100"
+                           required>
+                    <div class="field-error" th:if="${#fields.hasErrors('position')}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span th:errors="*{position}"></span>
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="field-group" data-field="phone" id="phoneGroup">
+                    <label class="field-label">Số điện thoại<span class="required">*</span></label>
+                    <div class="phone-row">
+
+                        <input type="tel" class="field-input"
+                               th:field="*{phone}"
+                               th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                               data-rule="phone"
+                               required>
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('phone')}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span th:errors="*{phone}"></span>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="field-group" data-field="email" id="emailGroup">
+                    <label class="field-label">Email<span class="required">*</span></label>
+                    <div class="email-row">
+                        <div class="input-icon-wrap">
+                            <input type="email" class="field-input"
+                                   th:field="*{email}"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                   data-rule="email"
+                                   required>
+                            <i class="bi bi-envelope icon-right"></i>
+                        </div>
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('email')}">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span th:errors="*{email}"></span>
+                    </div>
+                </div>
+
+            </div><!-- /fields-grid -->
+
+            <hr class="form-divider">
+
+            <!-- ── Section 2: Thông tin bổ sung ── -->
+            <div class="section-title">Thông tin bổ sung</div>
+
+            <div class="fields-grid">
+
+                <!-- Address -->
+                <div class="field-group" data-field="address">
+                    <label class="field-label">Địa chỉ</label>
+                    <input type="text"
+                           class="field-input"
+                           th:field="*{address}"
+                           data-rule="address"
+                           data-maxlength="500">
+                </div>
+
+                <!-- DOB -->
+                <div class="field-group" data-field="dob">
+                    <label class="field-label">Ngày sinh</label>
+                    <input type="date"
+                           class="field-input"
+                           th:field="*{dob}"
+                           data-rule="dob">
+                </div>
+
+                <!-- Notes -->
+                <div class="field-group full" data-field="notes">
+                    <label class="field-label">Ghi chú</label>
+                    <textarea class="field-input"
+                              th:field="*{notes}"
+                              data-rule="notes"
+                              data-maxlength="500"></textarea>
+                </div>
+
+            </div><!-- /fields-grid -->
+
+        </div><!-- /form-card -->
+
+    </form>
+</div><!-- /page-body -->
+</form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    'use strict';
+
+    /* ═══════════════════════════════════════════════════════
+       1. RULES
+    ═══════════════════════════════════════════════════════ */
+    const RULES = {
+        customerId: v => {
+            if (!v || !v.trim()) return 'Tài khoản khách hàng không được để trống';
+            if (!/^\d+$/.test(v))       return 'ID phải là số nguyên dương';
+            if (Number(v) <= 0)          return 'ID phải lớn hơn 0';
+            return null;
+        },
+        fullName: v => {
+            if (!v || !v.trim())         return 'Họ và tên không được để trống';
+            if (v.trim().length < 2)     return 'Họ và tên phải có ít nhất 2 ký tự';
+            if (v.length > 50)          return `Vượt quá 50 ký tự (hiện tại: ${v.length})`;
+            if (/\d/.test(v))            return 'Họ và tên không được chứa chữ số';
+            if (/[!@#$%^&*()_+=\[\]{};':"\\|,.<>\/?`~]/.test(v))
+                                         return 'Họ và tên không được chứa ký tự đặc biệt';
+            return null;
+        },
+        position: v => {
+            if (!v || !v.trim()) return 'Chức vụ không được để trống';
+            if (v.length > 100)          return `Vượt quá 100 ký tự (hiện tại: ${v.length})`;
+            return null;
+        },
+        phone: v => {
+            if (!v || !v.trim()) return 'Số điện thoại không được để trống';
+            if (v.length > 10)           return `Vượt quá 10 ký tự (hiện tại: ${v.length})`;
+            const cleaned = v.replace(/[\s\-().+]/g, '');
+            if (!/^\d+$/.test(cleaned))  return 'Chỉ chứa chữ số và ký tự: + - ( ) dấu cách';
+            if (cleaned.length < 7)      return 'Số điện thoại quá ngắn (tối thiểu 7 chữ số)';
+            const isVN = v.startsWith('0') || v.startsWith('+84') || v.startsWith('0084');
+            if (isVN) {
+                const vnOk = /^(\+84|0084|0)(3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])\d{7}$/.test(
+                    v.replace(/\s/g, '')
+                );
+                if (!vnOk) return 'Số điện thoại Việt Nam không đúng định dạng';
+            }
+            return null;
+        },
+        email: v => {
+            if (!v || !v.trim()) return 'Email không được để trống';
+            if (v.length > 100)          return `Vượt quá 100 ký tự (hiện tại: ${v.length})`;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v))
+                                         return 'Email không đúng định dạng (VD: ten@domain.com)';
+            return null;
+        },
+        address: v => {
+            if (!v) return null;
+            if (v.length > 500)          return `Vượt quá 500 ký tự (hiện tại: ${v.length})`;
+            return null;
+        },
+        dob: v => {
+            if (!v) return null;
+            const d = new Date(v);
+            if (isNaN(d.getTime()))      return 'Ngày sinh không hợp lệ';
+            const today = new Date(); today.setHours(0,0,0,0);
+            if (d > today)               return 'Ngày sinh không thể là ngày trong tương lai';
+            if (d < new Date('1900-01-01')) return 'Ngày sinh không được trước năm 1900';
+
+            const age = today.getFullYear() - d.getFullYear();
+            const m = today.getMonth() - d.getMonth();
+
+            if (age < 18 || (age === 18 && m < 0) ||
+               (age === 18 && m === 0 && today.getDate() < d.getDate())) {
+                return 'Phải đủ 18 tuổi trở lên';
+            }
+            return null;
+        },
+        notes: v => {
+            if (!v) return null;
+            if (v.length > 500)          return `Vượt quá 500 ký tự (hiện tại: ${v.length})`;
+            return null;
+        },
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       2. DOM HELPERS
+       Luôn tìm field-group chứa input, inject error VÀO field-group
+       (không bao giờ inject bên trong phone-row/email-row)
+    ═══════════════════════════════════════════════════════ */
+
+    /** Tìm .field-group cha gần nhất của input */
+    function getGroup(input) {
+        return input.closest('.field-group');
+    }
+
+    /** Xóa error cũ trong group của input */
+    function clearError(input) {
+        input.classList.remove('is-invalid', 'is-valid');
+        const group = getGroup(input);
+        if (!group) return;
+        group.querySelectorAll('.field-error').forEach(el => el.remove());
+    }
+
+    /** Hiển thị error: inject vào field-group, trước .btn-add-more nếu có */
+    function showError(input, msg) {
+        clearError(input);
+        if (!msg) return;
+
+        input.classList.add('is-invalid');
+
+        const group = getGroup(input);
+        if (!group) return;
+
+        const err = document.createElement('div');
+        err.className = 'field-error';
+        err.innerHTML = `<i class="bi bi-exclamation-circle"></i><span>${msg}</span>`;
+
+        // Chèn trước .btn-add-more nếu có, không thì append cuối group
+        const addBtn = group.querySelector('.btn-add-more');
+        if (addBtn) group.insertBefore(err, addBtn);
+        else        group.appendChild(err);
+    }
+
+    /** Đánh dấu valid */
+    function showValid(input) {
+        clearError(input);
+        if (input.value.trim()) input.classList.add('is-valid');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       3. VALIDATE MỘT INPUT
+    ═══════════════════════════════════════════════════════ */
+    function validateInput(input) {
+        const rule = RULES[input.dataset.rule];
+        if (!rule) return true;
+
+        const msg = rule(input.value);
+        if (msg) { showError(input, msg); return false; }
+        else     { showValid(input);       return true;  }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       4. BIND VALIDATION EVENTS
+       - Real-time: báo ngay khi vượt maxLength
+       - Debounce 500ms: cho lỗi format (đang gõ dở không báo sớm)
+       - Blur: validate toàn bộ không debounce
+    ═══════════════════════════════════════════════════════ */
+    function bindValidation(input) {
+        if (!input.dataset.rule) return;
+
+        let timer = null;
+
+        input.addEventListener('input', () => {
+            clearTimeout(timer);
+
+            const rule = RULES[input.dataset.rule];
+            if (!rule) return;
+
+            const msg = rule(input.value);
+
+            // Báo NGAY nếu là lỗi vượt maxLength
+            if (msg && msg.startsWith('Vượt quá')) {
+                showError(input, msg);
+                return;
+            }
+
+            // Nếu đang có lỗi → validate ngay để clear nhanh khi người dùng sửa
+            if (input.classList.contains('is-invalid')) {
+                if (msg) showError(input, msg);
+                else     showValid(input);
+                return;
+            }
+
+            // Lỗi format → debounce
+            timer = setTimeout(() => {
+                const m = rule(input.value);
+                if (m) showError(input, m);
+                else   showValid(input);
+            }, 500);
+        });
+
+        input.addEventListener('blur', () => {
+            clearTimeout(timer);
+            validateInput(input);
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       5. CHAR COUNTER
+    ═══════════════════════════════════════════════════════ */
+    function addCharCounter(input) {
+        const max = parseInt(input.dataset.maxlength, 10);
+        if (!max) return;
+
+        const counter = document.createElement('span');
+        counter.className = 'char-counter';
+        counter.textContent = `0 / ${max}`;
+
+        const group = getGroup(input);
+        const addBtn = group?.querySelector('.btn-add-more');
+        if (addBtn) group.insertBefore(counter, addBtn);
+        else        group?.appendChild(counter);
+
+        input.addEventListener('input', () => {
+            const len = input.value.length;
+            counter.textContent = `${len} / ${max}`;
+            counter.className = 'char-counter' +
+                (len > max      ? ' over' :
+                 len > max * .9 ? ' warn' : '');
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       6. ENTER → NEXT INPUT
+    ═══════════════════════════════════════════════════════ */
+    function initEnterNavigation() {
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+
+            const tag = e.target.tagName;
+            // Bỏ qua textarea (Enter để xuống dòng) và button/checkbox
+            if (tag === 'TEXTAREA' || tag === 'BUTTON' || e.target.type === 'checkbox') return;
+
+            e.preventDefault(); // chặn submit khi nhấn Enter trong input
+
+            // Lấy toàn bộ focusable inputs trong form
+            const focusable = [...document.querySelectorAll(
+                '#contactForm input:not([type="hidden"]):not([type="checkbox"]):not([disabled]),' +
+                '#contactForm select:not([disabled])'
+            )].filter(el => el.offsetParent !== null); // chỉ lấy visible
+
+            const idx = focusable.indexOf(e.target);
+            if (idx === -1) return;
+
+            const next = focusable[idx + 1];
+            if (next) {
+                next.focus();
+                // Với input text: đặt cursor cuối
+                if (next.type === 'text' || next.type === 'tel' || next.type === 'email') {
+                    next.setSelectionRange(next.value.length, next.value.length);
+                }
+            } else {
+                // Đã là input cuối → focus nút Lưu
+                document.querySelector('.btn-save')?.focus();
+            }
+        });
+    }
+
+    /*
+       8. SUBMIT GUARD
+     */
+    function initSubmitGuard() {
+        document.getElementById('contactForm').addEventListener('submit', e => {
+            const inputs = document.querySelectorAll('[data-rule]');
+            let valid = true;
+
+            inputs.forEach(input => {
+                if (!validateInput(input)) valid = false;
+            });
+
+            if (!valid) {
+                e.preventDefault();
+                const first = document.querySelector('.is-invalid');
+                first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                first?.focus();
+            }
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       9. INIT
+    ═══════════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+        // Bind validation + counter cho tất cả input có data-rule
+        document.querySelectorAll('[data-rule]').forEach(input => {
+            bindValidation(input);
+            addCharCounter(input);
+        });
+
+        initEnterNavigation();
+        initSubmitGuard();
+    });
+
+    // ═══════════════════════════════════════
+    //  SEARCHABLE COMBOBOX
+    // ═══════════════════════════════════════
+    const comboDisplay  = document.getElementById('comboDisplay');
+    const comboDropdown = document.getElementById('comboDropdown');
+    const comboSearch   = document.getElementById('comboSearch');
+    const comboText     = document.getElementById('comboText');
+    const comboClear    = document.getElementById('comboClear');
+    const comboList     = document.getElementById('comboList');
+    const comboEmpty    = document.getElementById('comboEmpty');
+    const hiddenInput   = document.getElementById('customerIdInput');
+
+    let selectedId = null;
+
+    /* Mở / đóng dropdown */
+    function toggleCombo() {
+        const isOpen = comboDropdown.classList.contains('open');
+        isOpen ? closeCombo() : openCombo();
+    }
+
+    function openCombo() {
+        comboDropdown.classList.add('open');
+        comboDisplay.classList.add('open');
+        // Reset search
+        comboSearch.value = '';
+        filterOptions('');
+        // Focus ô tìm kiếm
+        setTimeout(() => comboSearch.focus(), 50);
+    }
+
+    function closeCombo() {
+        comboDropdown.classList.remove('open');
+        comboDisplay.classList.remove('open');
+    }
+
+    /* Chọn option */
+    function selectOption(el) {
+        const id   = el.dataset.id;
+        const name = el.dataset.name;
+        const sub  = el.dataset.sub;
+
+        // Cập nhật hidden input
+        hiddenInput.value = id;
+        selectedId = id;
+
+        // Cập nhật hiển thị
+        comboText.textContent = name + (sub ? ` — ${sub}` : '');
+        comboText.classList.remove('placeholder');
+
+        // Đánh dấu selected
+        document.querySelectorAll('.combo-option').forEach(o =>
+            o.classList.toggle('selected', o.dataset.id === id)
+        );
+
+        // Hiện nút clear
+        comboClear.style.display = 'block';
+
+        // Xóa lỗi validation
+        hiddenInput.classList.remove('is-invalid');
+        const group = hiddenInput.closest('.field-group');
+        group?.querySelectorAll('.field-error.js-error').forEach(e => e.remove());
+
+        closeCombo();
+        comboDisplay.focus();
+    }
+
+    /* Xóa lựa chọn */
+    function clearCombo() {
+        hiddenInput.value = '';
+        selectedId = null;
+        comboText.textContent = 'Chọn khách hàng...';
+<!--        comboText.classList.add('placeholder');-->
+        comboClear.style.display = 'none';
+        document.querySelectorAll('.combo-option').forEach(o =>
+            o.classList.remove('selected')
+        );
+    }
+
+    /* Lọc danh sách theo keyword */
+    function filterOptions(kw) {
+        const q       = kw.toLowerCase().trim();
+        const options = comboList.querySelectorAll('.combo-option');
+        let   count   = 0;
+
+        options.forEach(opt => {
+            const name = (opt.dataset.name || '').toLowerCase();
+            const sub  = (opt.dataset.sub  || '').toLowerCase();
+            const show = !q || name.includes(q) || sub.includes(q);
+            opt.style.display = show ? '' : 'none';
+            if (show) count++;
+        });
+
+        comboEmpty.style.display = count === 0 ? 'block' : 'none';
+    }
+
+    /* Keyboard: mũi tên lên/xuống, Enter, Escape */
+    function comboKeydown(e) {
+        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            openCombo();
+        }
+    }
+
+    function searchKeydown(e) {
+        if (e.key === 'Escape') { closeCombo(); comboDisplay.focus(); return; }
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const visible = [...comboList.querySelectorAll('.combo-option')]
+                .filter(o => o.style.display !== 'none');
+            if (!visible.length) return;
+
+            const focused = comboList.querySelector('.combo-option.focused');
+            let idx = visible.indexOf(focused);
+            focused?.classList.remove('focused');
+
+            idx = e.key === 'ArrowDown'
+                ? Math.min(idx + 1, visible.length - 1)
+                : Math.max(idx - 1, 0);
+
+            visible[idx].classList.add('focused');
+            visible[idx].scrollIntoView({ block: 'nearest' });
+            return;
+        }
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const focused = comboList.querySelector('.combo-option.focused');
+            if (focused) selectOption(focused);
+        }
+    }
+
+    /* Đóng khi click ra ngoài */
+    document.addEventListener('click', e => {
+        if (!document.getElementById('customerCombo').contains(e.target)) {
+            closeCombo();
+        }
+    });
+
+    /* Nếu có giá trị sẵn từ server (edit form) */
+    document.addEventListener('DOMContentLoaded', () => {
+        const existingId = hiddenInput.value;
+        if (existingId) {
+            const opt = comboList.querySelector(`.combo-option[data-id="${existingId}"]`);
+            if (opt) selectOption(opt);
+        }
+    });
+</script>
+</body>
+</html>

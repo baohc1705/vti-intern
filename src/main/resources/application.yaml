@@ -1,0 +1,13 @@
+server:
+  port: 8080
+  servlet:
+    context-path: "/"
+
+spring:
+  application:
+    name: crm
+  datasource:
+    url: "jdbc:mysql://localhost:3306/db_crm"
+    username: "root"
+  jpa:
+    show-sql: true

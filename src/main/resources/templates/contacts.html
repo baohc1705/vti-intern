@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý liên hệ</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary:       #4f46e5;
+            --primary-hover: #4338ca;
+            --link-color:    #5b6cf9;
+            --border:        #e5e7eb;
+            --row-hover:     #f9fafb;
+            --muted:         #6b7280;
+            --dark:          #111827;
+        }
+
+        body {
+            background: #f3f4f6;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--dark);
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 16px 20px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .toolbar-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: auto;
+        }
+        .toolbar-title .chevron { color: var(--muted); font-size: .85rem; }
+
+        .search-box { position: relative; width: 270px; }
+        .search-box input {
+            width: 100%;
+            padding: 7px 12px 7px 34px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: .84rem;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .search-box .si {
+            position: absolute; left: 10px;
+            top: 50%; transform: translateY(-50%);
+            color: var(--muted); font-size: .88rem;
+        }
+
+        .btn-ai {
+            display: flex; align-items: center; gap: 5px;
+            padding: 6px 13px;
+            border: 2px solid var(--primary); border-radius: 8px;
+            color: var(--primary); background: transparent;
+            font-size: .84rem; font-weight: 600; cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-ai:hover { background: rgba(79,70,229,.06); }
+
+        .btn-icon {
+            background: none; border: 1px solid var(--border);
+            border-radius: 8px; width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--dark); transition: background .15s;
+        }
+        .btn-icon:hover { background: var(--row-hover); }
+
+        .btn-settings {
+            display: flex; align-items: center; gap: 5px;
+            padding: 6px 13px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: #fff; font-size: .84rem; font-weight: 600;
+            cursor: pointer; color: var(--dark); transition: background .15s;
+        }
+        .btn-settings:hover { background: var(--row-hover); }
+
+        .btn-create {
+            display: flex; align-items: center; gap: 5px;
+            padding: 7px 16px;
+            border: none; border-radius: 8px;
+            background: var(--primary); color: #fff;
+            font-size: .84rem; font-weight: 600; cursor: pointer;
+            text-decoration: none; transition: background .15s;
+        }
+        .btn-create:hover { background: var(--primary-hover); color: #fff; }
+
+        /* ── Table ── */
+        .table-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 8px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+
+        .contact-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+        .contact-table thead tr { border-bottom: 2px solid var(--border); }
+        .contact-table th {
+            padding: 12px 16px;
+            font-weight: 600; text-align: left;
+            background: #fff; white-space: nowrap;
+        }
+        .contact-table td {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .contact-table tbody tr:last-child td { border-bottom: none; }
+        .contact-table tbody tr:hover { background: var(--row-hover); }
+
+        .contact-table input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: var(--primary); cursor: pointer;
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .82rem; color: #fff;
+            background: linear-gradient(135deg, #a78bfa, #6366f1);
+            flex-shrink: 0;
+        }
+
+        /* Name link */
+        .contact-link {
+            color: var(--link-color); text-decoration: none; font-weight: 500;
+        }
+        .contact-link:hover { text-decoration: underline; }
+
+        /* Badges */
+        .badge-yes {
+            background: #d1fae5; color: #065f46;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: .76rem; font-weight: 600;
+        }
+        .badge-no {
+            background: #f3f4f6; color: var(--muted);
+            padding: 3px 10px; border-radius: 20px;
+            font-size: .76rem;
+        }
+
+        .text-muted-cell { color: var(--muted); white-space: nowrap; }
+
+        /* 3-dot */
+        .btn-more {
+            background: none; border: none;
+            color: var(--muted); font-size: 1.1rem;
+            cursor: pointer; padding: 4px 8px; border-radius: 6px;
+        }
+        .btn-more:hover { background: #f3f4f6; color: var(--dark); }
+
+        /* Empty */
+        .empty-row td {
+            text-align: center; padding: 40px;
+            color: #ef4444; font-weight: 600;
+        }
+
+        /* Row được chọn */
+        .contact-table tbody tr.row-selected {
+            background: #ede9fe !important;
+        }
+        .contact-table tbody tr.row-selected:hover {
+            background: #ddd6fe !important;
+        }
+
+        .search-box .clear-btn {
+            position: absolute; right: 8px;
+            top: 50%; transform: translateY(-50%);
+            background: none; border: none;
+            color: var(--muted); cursor: pointer;
+            padding: 0; font-size: .9rem; line-height: 1;
+        }
+        .search-box .clear-btn:hover { color: var(--dark); }
+
+        .search-box input { padding-right: 28px; }
+
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            background: #fff;
+            font-size: .84rem;
+        }
+
+        .pg-info { color: var(--muted); }
+
+        .pg-size { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+        .pg-size select {
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: .84rem;
+            cursor: pointer;
+        }
+
+        .pg-pages { display: flex; align-items: center; gap: 4px; }
+
+        .pg-btn {
+            min-width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border); border-radius: 6px;
+            color: var(--dark); text-decoration: none;
+            font-size: .82rem; transition: all .15s;
+            padding: 0 8px;
+        }
+        .pg-btn:hover:not(.disabled):not(.active) {
+            background: var(--row-hover);
+            border-color: #d1d5db;
+        }
+        .pg-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff; font-weight: 600;
+        }
+        .pg-btn.disabled {
+            opacity: .35; pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container mt-4 mb-5">
+
+    <h2 class="fw-bold mb-3">Quản lý liên hệ</h2>
+    <!-- Success -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Error -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div class="table-wrapper">
+        <!-- ── Toolbar ── -->
+        <div class="toolbar">
+
+            <span class="toolbar-title">
+                Tất cả liên hệ
+                <span th:if="${contacts != null}"
+                      th:text="'(' + ${#lists.size(contacts)} + ')'"></span>
+                <span th:if="${contacts == null}">(0)</span>
+                <i class="bi bi-chevron-down chevron"></i>
+            </span>
+            <!--Nút đã chọn-->
+            <button class="btn-settings text-danger" id="btnDeleteSelected"
+                    style="display:none; border-color:#fca5a5;"
+                    onclick="openBulkDeleteModal()">
+                <i class="bi bi-trash"></i>
+                Xóa đã chọn (<span id="selectedCount">0</span>)
+            </button>
+
+            <form method="get" th:action="@{/contacts}"
+                  style="display:flex; align-items:center; gap:8px;">
+
+                <div class="search-box">
+                    <i class="bi bi-search si"></i>
+                    <input type="text"
+                           name="keyword"
+                           th:value="${keyword}"
+                           placeholder="Tìm theo họ tên, email..."
+                           oninput="debounceSearch(this.form)">
+                </div>
+                <!-- Giữ lại size khi search -->
+                <input type="hidden" name="size" th:value="${size}">
+            </form>
+
+            <a th:href="@{/contacts}" class="btn-icon" title="Làm mới">
+                <i class="bi bi-arrow-clockwise"></i>
+            </a>
+
+            <a th:href="@{/contacts/create}" class="btn-create">
+                <i class="bi bi-plus-lg"></i> Tạo mới
+            </a>
+
+        </div>
+
+        <!-- ── Table ── -->
+        <table class="contact-table">
+            <thead>
+            <tr>
+                <th style="width:42px;"><input type="checkbox" title="Chọn tất cả"></th>
+
+                <th>Họ và tên</th>
+                <th>Chức vụ</th>
+                <th>Tên khách hàng</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Liên hệ chính</th>
+                <th>Thời gian cập nhật</th>
+                <th style="width:42px;"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <!-- Rỗng -->
+            <tr class="empty-row" th:if="${contacts == null or #lists.isEmpty(contacts)}">
+                <td colspan="9">Không tìm thấy liên hệ nào</td>
+            </tr>
+
+            <!-- Dữ liệu -->
+            <tr th:each="contact : ${contacts}">
+
+                <!-- Checkbox -->
+                <td><input type="checkbox"></td>
+
+                <!-- Họ và tên — fullName -->
+                <td>
+                    <a th:href="@{/contacts/edit/{id}(id=${contact.id})}"
+                       class="contact-link"
+                       th:text="${contact.fullName}">
+                    </a>
+                </td>
+
+                <!-- Chức vụ — position -->
+                <td th:text="${contact.position}"></td>
+                <td th:text="${contact.customer.name}"></td>
+                <!-- Số điện thoại — phone -->
+                <td class="text-muted-cell" th:text="${contact.phone}"></td>
+
+                <!-- Email — email -->
+                <td class="text-muted-cell" th:text="${contact.email}"></td>
+
+                <!--
+                    Liên hệ chính — isPrimary
+                    Getter là isPrimary() nên Thymeleaf dùng contact.primary
+                -->
+                <td>
+                    <span th:if="${contact.primary}" class="badge-yes">✔ Chính</span>
+                    <span th:if="${!contact.primary}" class="badge-no">—</span>
+                </td>
+
+                <!-- Thời gian cập nhật — updatedAt -->
+                <td class="text-muted-cell"
+                    th:text="${contact.updatedAt != null}
+                               ? ${#dates.format(contact.updatedAt, 'dd/MM/yyyy HH:mm')}
+                               : '—'">
+                </td>
+
+                <!-- Menu 3 chấm -->
+                <td>
+                    <div class="dropdown">
+                        <button class="btn-more"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li>
+                                <a class="dropdown-item"
+                                   th:href="@{/contacts/edit/{id}(id=${contact.id})}">
+                                    <i class="bi bi-pencil me-2 text-primary"></i>Chỉnh sửa
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger"
+                                   href="#"
+                                   th:attr="data-id=${contact.id}"
+                                   onclick="openDeleteModal(this)">
+                                    <i class="bi bi-trash me-2"></i>Xóa
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- ── Pagination ── -->
+        <div class="pagination-bar"
+             th:if="${totalPages != null and totalPages > 0}">
+
+            <!-- Trái: tổng số -->
+            <span class="pg-info">
+                Hiển thị
+                <strong th:text="${contacts.size()}">0</strong> /
+                <strong th:text="${totalItems}">0</strong> liên hệ
+            </span>
+
+            <!-- Giữa: số trang ← ĐƯA LÊN TRƯỚC pg-size -->
+            <div class="pg-pages">
+                <a class="pg-btn"
+                   th:classappend="${currentPage == 0} ? 'disabled'"
+                   th:href="@{/contacts(keyword=${keyword}, page=${currentPage - 1}, size=${size})}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+
+                <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                    <a class="pg-btn"
+                       th:classappend="${i == currentPage} ? 'active'"
+                       th:text="${i + 1}"
+                       th:href="@{/contacts(keyword=${keyword}, page=${i}, size=${size})}">
+                    </a>
+                </th:block>
+
+                <a class="pg-btn"
+                   th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'"
+                   th:href="@{/contacts(keyword=${keyword}, page=${currentPage + 1}, size=${size})}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+
+            <!-- Phải: số dòng/trang -->
+            <div class="pg-size">
+                <span>Số dòng:</span>
+                <select onchange="changeSize(this.value)">
+                    <option th:each="s : ${pageSizes}"
+                            th:value="${s}"
+                            th:text="${s}"
+                            th:selected="${s == size}">
+                    </option>
+                </select>
+            </div>
+
+        </div>
+    </div><!-- /table-wrapper -->
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa liên hệ này không?
+                <br>
+                <small class="text-muted">Hành động này không thể hoàn tác.</small>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- Modal xác nhận xóa hàng loạt (dùng chung deleteModal đã có, hoặc thêm riêng) -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác nhận xóa hàng loạt
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc muốn xóa <strong id="bulkCount">0</strong> liên hệ đã chọn?
+                <br>
+                <small class="text-muted">Hành động này không thể hoàn tác.</small>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-danger" id="btnConfirmBulk">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let deleteId = null;
+
+    function openDeleteModal(el) {
+        deleteId = el.getAttribute("data-id");
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    function confirmDelete() {
+        if (deleteId) {
+            window.location.href = "/contacts/delete/" + deleteId;
+        }
+    }
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+        });
+    }, 3000);
+</script>
+<script>
+    // Lấy các phần tử
+    const chkAll       = document.querySelector('thead input[type="checkbox"]');
+    const chkRows      = () => [...document.querySelectorAll('tbody input[type="checkbox"]')];
+    const btnDelete    = document.getElementById('btnDeleteSelected');
+    const selectedSpan = document.getElementById('selectedCount');
+    const bulkCountEl  = document.getElementById('bulkCount');
+
+    // Lấy danh sách ID đang được chọn
+    function getSelectedIds() {
+        return chkRows()
+            .filter(chk => chk.checked)
+            .map(chk => chk.closest('tr').querySelector('a.contact-link')
+                            ?.href.match(/\/(\d+)$/)?.[1])
+            .filter(Boolean)
+            .map(Number);
+    }
+
+    // Cập nhật UI nút xóa hàng loạt
+    function updateDeleteButton() {
+        const count = getSelectedIds().length;
+        selectedSpan.textContent = count;
+        btnDelete.style.display  = count > 0 ? '' : 'none';
+
+        chkRows().forEach(chk => {
+            chk.closest('tr').classList.toggle('row-selected', chk.checked);
+        });
+    }
+
+    // Checkbox "Chọn tất cả"
+    chkAll.addEventListener('change', () => {
+        chkRows().forEach(chk => chk.checked = chkAll.checked);
+        updateDeleteButton();
+    });
+
+    // Checkbox từng dòng
+    document.querySelector('tbody').addEventListener('change', e => {
+        if (e.target.type !== 'checkbox') return;
+        chkAll.checked = chkRows().every(c => c.checked);
+        updateDeleteButton();
+    });
+
+    // Mở modal xác nhận
+    function openBulkDeleteModal() {
+        const ids = getSelectedIds();
+        if (!ids.length) return;
+        bulkCountEl.textContent = ids.length;
+        new bootstrap.Modal(document.getElementById('bulkDeleteModal')).show();
+    }
+
+    //  Gửi AJAX khi xác nhận
+    document.getElementById('btnConfirmBulk').addEventListener('click', async () => {
+        const ids = getSelectedIds();
+        if (!ids.length) return;
+
+        try {
+            const res = await fetch('/contacts/remove-range', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ids)
+            });
+
+            if (res.ok || res.redirected) {
+                // Xóa dòng khỏi DOM ngay, không cần reload
+                chkRows()
+                    .filter(chk => chk.checked)
+                    .forEach(chk => chk.closest('tr').remove());
+
+                bootstrap.Modal.getInstance(
+                    document.getElementById('bulkDeleteModal')
+                ).hide();
+
+                showToast(`Đã xóa ${ids.length} liên hệ thành công!`, 'success');
+                updateDeleteButton();
+            } else {
+                showToast('Xóa thất bại, vui lòng thử lại.', 'danger');
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối: ' + err.message, 'danger');
+        }
+    });
+
+    // Toast thông báo nhẹ
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show`;
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;min-width:280px;';
+        toast.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Debounce search: gõ xong 400ms mới submit
+    let searchTimer = null;
+    function debounceSearch(form) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            form.querySelector('[name="page"]')?.remove(); // reset về trang 0
+            form.submit();
+        }, 400);
+    }
+
+    // Đổi số dòng/trang
+    function changeSize(val) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('size', val);
+        url.searchParams.set('page', '0');
+        window.location.href = url.toString();
+    }
+</script>
